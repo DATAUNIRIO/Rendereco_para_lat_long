@@ -21,6 +21,9 @@ body {
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+endereco <- read_delim("C:/Users/Hp/Documents/GitHub/Rendereco_para_lat_long/enderecos.csv",
+                            ";", escape_double = FALSE, trim_ws = TRUE)
 ```
 
 
@@ -38,11 +41,11 @@ Existem bases de dados em diversos formatos. Excel, CSV, TXT, DAT, SAV, JSON, en
 Neste exemplo, vamos utilizar o pacote RCurl para carregar um arquivo CSV.
 
 
-```{r zero,warning=FALSE,message=FALSE}
+```{r zero,warning=FALSE,message=FALSE, eval = FALSE}
 #install.packages('RCurl')
-#library(RCurl)
-#x <- getURL("https://raw.githubusercontent.com/DATAUNIRIO/Base_de_dados/master/Estados.csv")
-#BaseUF <- read.csv(text=x, header=T, quote="", sep=";",dec = ",")
+library(RCurl)
+x <- getURL("https://raw.githubusercontent.com/DATAUNIRIO/Rendereco_para_lat_long/master/enderecos.csv")
+endereco <- read.csv(text=x, header=T, quote="", sep=";",dec = ",")
 
 ```
 
@@ -50,11 +53,8 @@ Neste exemplo, vamos utilizar o pacote RCurl para carregar um arquivo CSV.
 ### Construir o Endereço completo com a função 'paste'
 
 ```{r bd,warning=FALSE,message=FALSE}
-library(readr)
-endereco <- read_delim("C:/Users/Hp/Documents/GitHub/Rendereco_para_lat_long/enderecos.csv",
-                            ";", escape_double = FALSE, trim_ws = TRUE)
 
-endereco$Enderecos<-paste(endereco$NM_LOGRADO,",",endereco$NU_NUMERO,endereco$NM_BAIRRO,", RIO DE JANEIRO")
+endereco$Enderecos<-as.character(paste(endereco$NM_LOGRADO,",",endereco$NU_NUMERO,endereco$NM_BAIRRO,", RIO DE JANEIRO"))
 
 ```
 
@@ -141,3 +141,6 @@ mapamanguinhos <- leaflet(dados_manguinhosLatlong) %>%
   addProviderTiles(providers$Esri.WorldImagery) %>%
   addHeatmap(blur = 20, max = 0.05, radius = 15)
 mapamanguinhos
+```
+
+Caso ainda não funcione, entre em contato: gaeunirio@gmail.com
