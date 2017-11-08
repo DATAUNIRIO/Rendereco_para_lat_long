@@ -1,0 +1,64 @@
+---
+title: "MAPA RIO DE JANEIRO"
+author: "DATAUNRIO e Grupo de Apoio Estatístico - GAE/UNIRIO"
+output: 
+   html_document:
+     theme: flatly
+     highlight: tango
+     toc: true
+     toc_float: true
+     code_folding: hide
+---
+
+<head>
+<style>
+body {
+    background-color: #8fa9c4;
+}
+</style>
+</head>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+```{r leaflet,warning=FALSE,message=FALSE}
+dados_manguinhos   <- subset(endereco,endereco$lon!=0 & endereco$NM_BAIRRO=="MANGUINHOS")
+
+dados_rocinha <- subset(endereco,endereco$lon!=0 & endereco$NM_BAIRRO=="ROCINHA")
+
+dados_manguinhosLatlong<- dados_manguinhos[,c(6:7)]
+dados_rocinhaLatlong<-dados_rocinha[,c(6:7)]
+
+dados_manguinhosLatlong<-data.frame(dados_manguinhosLatlong)
+dados_rocinhaLatlong<-data.frame(dados_rocinhaLatlong)
+```
+
+
+### Criação do mapa de calor (heatmap) - área 1
+
+```{r leaflet2,warning=FALSE,message=FALSE}
+library(leaflet)
+library(leaflet.extras)
+library(magrittr)
+
+nomes<-c('lng','lat')
+colnames(dados_rocinhaLatlong)<-nomes
+colnames(dados_manguinhosLatlong)<-nomes
+
+maparocinha <- leaflet(dados_rocinhaLatlong) %>%
+  addProviderTiles(providers$Esri.WorldImagery) %>%
+  addHeatmap(blur = 20, max = 0.05, radius = 15)
+maparocinha
+```
+
+### Criação do mapa de calor (heatmap) - área 2
+
+```{r leaflet3,warning=FALSE,message=FALSE}
+mapamanguinhos <- leaflet(dados_manguinhosLatlong) %>%
+  addProviderTiles(providers$Esri.WorldImagery) %>%
+  addHeatmap(blur = 20, max = 0.05, radius = 15)
+mapamanguinhos
+```
