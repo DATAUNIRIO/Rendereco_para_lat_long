@@ -1,0 +1,143 @@
+---
+title: "Base de dados de endereços para LatLong"
+author: "DATAUNRIO e Grupo de Apoio Estatístico - GAE/UNIRIO"
+output: 
+   html_document:
+     theme: flatly
+     highlight: tango
+     toc: true
+     toc_float: true
+     code_folding: hide
+---
+
+<head>
+<style>
+body {
+    background-color: #8fa9c4;
+}
+</style>
+</head>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Função de relacionamento do R com o endereço 
+
+Este script cria uma função que pega **todos** os endereços de uma bases de dados e cria duas novas colunas. As novas colunas são para a latitude e a longitude de cada endereço encontrado.
+
+Desenvolvido pela equipe do DATAUNRIO e do GAE/UNIRIO. Entre em contato: gaeunirio@gmail.com
+
+## Passo zero
+### Carregar a base de dados
+
+Existem bases de dados em diversos formatos. Excel, CSV, TXT, DAT, SAV, JSON, entre outros. cada tipo de base de dados requer um pacote diferente no R.
+
+Neste exemplo, vamos utilizar o pacote RCurl para carregar um arquivo CSV.
+
+
+```{r zero,warning=FALSE,message=FALSE}
+#install.packages('RCurl')
+#library(RCurl)
+#x <- getURL("https://raw.githubusercontent.com/DATAUNIRIO/Base_de_dados/master/Estados.csv")
+#BaseUF <- read.csv(text=x, header=T, quote="", sep=";",dec = ",")
+
+```
+
+## Passo um
+### Construir o Endereço completo com a função 'paste'
+
+```{r bd,warning=FALSE,message=FALSE}
+library(readr)
+endereco <- read_delim("C:/Users/Hp/Documents/GitHub/Rendereco_para_lat_long/enderecos.csv",
+                            ";", escape_double = FALSE, trim_ws = TRUE)
+
+endereco$Enderecos<-paste(endereco$NM_LOGRADO,",",endereco$NU_NUMERO,endereco$NM_BAIRRO,", RIO DE JANEIRO")
+
+```
+
+## Passo dois
+### Testar o geocode com um caso.
+
+```{r teste,warning=FALSE,message=FALSE}
+library(ggmap)
+# Teste para ver se esta funcionando
+resultado <- geocode("ROSAS , 28 MANGUINHOS , RIO DE JANEIRO" , output = "latlona", source = "google")
+resultado
+```
+
+## Passo três
+### Desenvolvimento da função para todos os endereços do banco de dados.
+
+```{r ggmap,warning=FALSE,message=FALSE}
+# Numero de linhas do banco de dados "endereco" = dim(endereco)[1]
+for(i in 1:dim(endereco)[1])
+  {
+  result <- geocode(endereco$Enderecos[i], output = "latlona", source = "google")
+  if (is.na(result) == "TRUE") {
+    endereco$lon[i] <- 0
+    endereco$lat[i] <- 0
+    endereco$geoAddress[i] <- 0
+  }
+  else{  
+    endereco$lon[i] <- as.numeric(result[1])
+    endereco$lat[i] <- as.numeric(result[2])
+    endereco$geoAddress[i] <- as.character(result[3])
+  }
+}
+
+```
+
+## Passo quatro
+### Salvando o arquivo com as colunas Lat,Long.
+
+Salvando um CSV com a Latitude e Longitude no diretorio de trabalho
+```{r csv,warning=FALSE,message=FALSE}
+saveRDS(endereco, "endereco.rds")
+write.csv(endereco, "BancoSINANLatLong.csv", row.names=FALSE)
+```
+
+## Passo cinco
+### Preparação para o Mapa
+
+
+```{r leaflet,warning=FALSE,message=FALSE}
+dados_manguinhos   <- subset(endereco,endereco$lon!=0 & endereco$NM_BAIRRO=="MANGUINHOS")
+
+dados_rocinha <- subset(endereco,endereco$lon!=0 & endereco$NM_BAIRRO=="ROCINHA")
+
+dados_manguinhosLatlong<- dados_manguinhos[,c(6:7)]
+dados_rocinhaLatlong<-dados_rocinha[,c(6:7)]
+
+dados_manguinhosLatlong<-data.frame(dados_manguinhosLatlong)
+dados_rocinhaLatlong<-data.frame(dados_rocinhaLatlong)
+```
+
+## Passo seis
+### Criação do mapa de calor (heatmap) - área 1
+
+```{r leaflet2,warning=FALSE,message=FALSE}
+library(leaflet)
+library(leaflet.extras)
+library(magrittr)
+
+nomes<-c('lng','lat')
+colnames(dados_rocinhaLatlong)<-nomes
+colnames(dados_manguinhosLatlong)<-nomes
+
+maparocinha <- leaflet(dados_rocinhaLatlong) %>%
+  addProviderTiles(providers$Esri.WorldImagery) %>%
+  addHeatmap(blur = 20, max = 0.05, radius = 15)
+maparocinha
+```
+
+## Passo sete
+### Criação do mapa de calor (heatmap) - área 2
+
+```{r leaflet3,warning=FALSE,message=FALSE}
+mapamanguinhos <- leaflet(dados_manguinhosLatlong) %>%
+  addProviderTiles(providers$Esri.WorldImagery) %>%
+  addHeatmap(blur = 20, max = 0.05, radius = 15)
+mapamanguinhos
