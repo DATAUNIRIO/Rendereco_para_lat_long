@@ -20,7 +20,7 @@ body {
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
+endereco <- readRDS("endereco.rds")
 ```
 
 
