@@ -13,7 +13,7 @@ output:
 <head>
 <style>
 body {
-    background-color: #8fa9c4;
+    background-color: #ceffe9;
 }
 </style>
 </head>
@@ -21,6 +21,7 @@ body {
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+endereco<-readRDS("endereco.rds")
 ```
 
 
@@ -68,7 +69,7 @@ resultado
 ## Passo três
 ### Desenvolvimento da função para todos os endereços do banco de dados.
 
-```{r ggmap,warning=FALSE,message=FALSE}
+```{r ggmap,warning=FALSE,message=FALSE,eval = FALSE}
 # Numero de linhas do banco de dados "endereco" = dim(endereco)[1]
 for(i in 1:dim(endereco)[1])
   {
@@ -90,7 +91,7 @@ for(i in 1:dim(endereco)[1])
 ### Salvando o arquivo com as colunas Lat,Long.
 
 Salvando um CSV com a Latitude e Longitude no diretorio de trabalho
-```{r csv,warning=FALSE,message=FALSE}
+```{r csv,warning=FALSE,message=FALSE,eval = FALSE}
 saveRDS(endereco, "endereco.rds")
 write.csv(endereco, "BancoSINANLatLong.csv", row.names=FALSE)
 ```
